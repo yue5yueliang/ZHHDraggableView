@@ -10,7 +10,7 @@ ZHHDraggableView 让你可以将任意视图变为可拖动并悬浮在屏幕上
 这个库为交互式应用提供了更多的灵活性，可以使视图随意悬浮并拖动到任何位置。
   DESC
 
-  s.homepage         = 'https://github.com/yueyueliang/ZHHDraggableView'
+  s.homepage         = 'https://github.com/yue5yueliang/ZHHDraggableView'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { '桃色三岁' => '136769890@qq.com' }
   s.source           = { :git => 'https://github.com/yue5yueliang/ZHHDraggableView.git', :tag => s.version.to_s }
