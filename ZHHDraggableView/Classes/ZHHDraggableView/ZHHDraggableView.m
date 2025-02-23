@@ -193,7 +193,6 @@
 - (void)keepBounds {
     // 计算中心点
     float centerX = self.freeRect.origin.x + (self.freeRect.size.width - self.frame.size.width) / 2;
-    CGRect rect = self.frame;
     
     // 判断是否启用自动黏贴边界效果
     if (self.isKeepBounds == NO) {

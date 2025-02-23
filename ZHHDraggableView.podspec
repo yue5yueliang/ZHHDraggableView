@@ -14,7 +14,7 @@ ZHHDraggableView 让你可以将任意视图变为可拖动并悬浮在屏幕上
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { '桃色三岁' => '136769890@qq.com' }
   s.source           = { :git => 'https://github.com/yue5yueliang/ZHHDraggableView.git', :tag => s.version.to_s }
-  s.ios.deployment_target = '10.0'
+  s.ios.deployment_target = '13.0'
 
   # 源文件路径，指明需要包含的源代码文件
   s.source_files = 'ZHHDraggableView/Classes/**/*'
