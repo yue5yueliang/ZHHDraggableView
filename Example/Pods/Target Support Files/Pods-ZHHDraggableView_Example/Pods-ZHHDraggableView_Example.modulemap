@@ -1,0 +1,6 @@
+framework module Pods_ZHHDraggableView_Example {
+  umbrella header "Pods-ZHHDraggableView_Example-umbrella.h"
+
+  export *
+  module * { export * }
+}

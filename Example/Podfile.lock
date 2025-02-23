@@ -1,0 +1,16 @@
+PODS:
+  - ZHHDraggableView (0.1.0)
+
+DEPENDENCIES:
+  - ZHHDraggableView (from `../`)
+
+EXTERNAL SOURCES:
+  ZHHDraggableView:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  ZHHDraggableView: 0c0f0c0fd832c776cbe9ad7a1b5e4a21f5a125f5
+
+PODFILE CHECKSUM: dad6cb177a0a51248ea4ae8cb094c3761d586d18
+
+COCOAPODS: 1.16.2
