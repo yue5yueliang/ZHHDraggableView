@@ -1,57 +1,17 @@
-##推荐使用清华大学镜像源
-#source 'https://mirrors.tuna.tsinghua.edu.cn/git/CocoaPods/Specs.git'
-
-source 'https://github.com/CocoaPods/Specs.git'
+use_frameworks!
 
 ##忽略.cocoapods中多个specs源引起的警告问题
 install! 'cocoapods', :warn_for_unused_master_specs_repo => false
 
-# Uncomment the next line to define a global platform for your project
 platform :ios, '13.0'
 
 target 'ZHHDraggableView_Example' do
-  # Comment the next line if you don't want to use dynamic frameworks
-  # 表示可以使用 swift 的框架
-  use_frameworks!
-  
   pod 'ZHHDraggableView', :path => '../'
-  pod 'Masonry'  # 自动布局框架，简化 AutoLayout 使用
+  pod 'SnapKit'        # 自动布局 DSL
 
   target 'ZHHDraggableView_Tests' do
     inherit! :search_paths
 
     
-  end
-end
-
-post_install do |installer|
-    # 🔧 针对 Pods 目标配置
-    installer.pods_project.targets.each do |target|
-        target.build_configurations.each do |config|
-              # 设置 iOS 部署目标为 13.0
-              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
-              # 禁用 Bitcode
-              config.build_settings['ENABLE_BITCODE'] = 'NO' # 禁用 Bitcode 以兼容部分库
-              # 禁用代码签名，特别适用于模拟器
-              config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = '' # 清空扩展的代码签名身份
-              config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO' # 禁用代码签名的强制要求
-              config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO' # 禁用代码签名
-
-              # 🔥🔥 排除 M1/M2 模拟器的 arm64 架构 🔥🔥
-              if config.name == 'Debug'
-                  config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = '$(inherited) arm64'
-              end
-        end
-  end
-
-  # 🔧 针对主工程 target 配置（关键！）
-  installer.aggregate_targets.each do |aggregate_target|
-        aggregate_target.user_project.native_targets.each do |native_target|
-              native_target.build_configurations.each do |config|
-                    if config.name == 'Debug'
-                        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = '$(inherited) arm64'
-                    end
-              end
-        end
   end
 end

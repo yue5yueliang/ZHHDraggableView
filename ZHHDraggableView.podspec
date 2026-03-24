@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'ZHHDraggableView'
-  s.version          = '0.0.2'
+  s.version          = '0.0.3'
   s.summary          = 'ZHHDraggableView 提供可拖动和悬浮的视图，类似 iOS 的 AssistiveTouch 功能。'
 
   # 详细描述 pod 的功能、用途及特点
@@ -15,9 +15,10 @@ ZHHDraggableView 让你可以将任意视图变为可拖动并悬浮在屏幕上
   s.author           = { '桃色三岁' => '136769890@qq.com' }
   s.source           = { :git => 'https://github.com/yue5yueliang/ZHHDraggableView.git', :tag => s.version.to_s }
   s.ios.deployment_target = '13.0'
+  s.swift_version = '5.0'
 
   # 源文件路径，指明需要包含的源代码文件
-  s.source_files = 'ZHHDraggableView/Classes/**/*'
+  s.source_files = 'ZHHDraggableView/Classes/**/*.swift'
 
   # 如果需要包含资源文件，可以通过下面的代码添加
   # s.resource_bundles = {

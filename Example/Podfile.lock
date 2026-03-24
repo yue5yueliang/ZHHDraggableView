@@ -1,23 +1,23 @@
 PODS:
-  - Masonry (1.1.0)
-  - ZHHDraggableView (0.0.1)
+  - SnapKit (5.7.1)
+  - ZHHDraggableView (0.0.3)
 
 DEPENDENCIES:
-  - Masonry
+  - SnapKit
   - ZHHDraggableView (from `../`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
-    - Masonry
+  trunk:
+    - SnapKit
 
 EXTERNAL SOURCES:
   ZHHDraggableView:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
-  ZHHDraggableView: e90342045aed7f8e9e8b992d479138e6fb64ed56
+  SnapKit: d612e99e678a2d3b95bf60b0705ed0a35c03484a
+  ZHHDraggableView: 4cd9898823878366373ada4e8e42b55a9ec879b1
 
-PODFILE CHECKSUM: d83c23b6192db871f728643af53e63aae3d68015
+PODFILE CHECKSUM: 40f693338b32c9728ae9d27acff1544ccf7321ed
 
 COCOAPODS: 1.16.2

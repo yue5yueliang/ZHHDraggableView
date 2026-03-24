@@ -17,3 +17,39 @@
 git clone https://github.com/yue5yueliang/ZHHDraggableView.git
 cd ZHHDraggableView/Example
 pod install
+```
+
+## 安装
+
+在 `Podfile` 中添加：
+
+```ruby
+pod 'ZHHDraggableView'
+```
+
+## 支持语言
+
+- Swift
+- Objective-C
+
+## Swift 使用示例
+
+```swift
+import ZHHDraggableView
+
+let dragView = ZHHDraggableView(frame: CGRect(x: 100, y: 200, width: 80, height: 80))
+dragView.button.setTitle("可拖曳", for: .normal)
+dragView.isKeepBounds = true
+view.addSubview(dragView)
+```
+
+## Objective-C 使用示例
+
+```objc
+@import ZHHDraggableView;
+
+ZHHDraggableView *dragView = [[ZHHDraggableView alloc] initWithFrame:CGRectMake(100, 200, 80, 80)];
+[dragView.button setTitle:@"可拖曳" forState:UIControlStateNormal];
+dragView.isKeepBounds = YES;
+[self.view addSubview:dragView];
+```

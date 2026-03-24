@@ -1,69 +1,69 @@
 //
-//  ZHHViewController.m
-//  ZHHDraggableView
+//  OCExampleViewController.m
+//  ZHHDraggableView_Example
 //
-//  Created by 桃色三岁 on 02/23/2025.
-//  Copyright (c) 2025 桃色三岁. All rights reserved.
+//  Created by 桃色三岁 on 2025/02/23.
+//  Copyright © 2026 桃色三岁. All rights reserved.
 //
 
-#import "ZHHViewController.h"
-#import <Masonry/Masonry.h>
-#import <ZHHDraggableView/ZHHDraggableView.h>
+#import "OCExampleViewController.h"
+@import ZHHDraggableView;
 
-@interface ZHHViewController () <ZHHDraggableViewDelegate>
+@interface OCExampleViewController () <ZHHDraggableViewDelegate>
 
 @property(nonatomic,strong)ZHHDraggableView *dragView;
 @property(nonatomic,strong)UILabel *leftLabel;
 @property(nonatomic,strong)UILabel *rightLabel;
-
 @property(nonatomic,strong)UISwitch *leftSwitch;
 @property(nonatomic,strong)UISwitch *rightSwitch;
 @property(nonatomic,strong)UILabel *tipsLabel;
-
 @property(nonatomic,strong)UIView *containerView;
 
 @end
 
-@implementation ZHHViewController
+@implementation OCExampleViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.title = @"OC 示例";
+    self.view.backgroundColor = [UIColor systemBackgroundColor];
     [self.view addSubview:self.leftLabel];
     [self.view addSubview:self.rightLabel];
     [self.view addSubview:self.tipsLabel];
-
     [self.view addSubview:self.leftSwitch];
     [self.view addSubview:self.rightSwitch];
-
     [self.view addSubview:self.containerView];
     [self.view addSubview:self.dragView];
 
-    [self.leftSwitch mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.mas_equalTo(self.view).offset(20);
-        make.bottom.mas_equalTo(self.view).offset(-100);
-    }];
-    [self.rightSwitch mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.mas_equalTo(self.view).offset(-20);
-        make.bottom.mas_equalTo(self.view).offset(-100);
-    }];
-    [self.leftLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.mas_equalTo(self.leftSwitch);
-        make.top.mas_equalTo(self.leftSwitch.mas_bottom);
-    }];
-    [self.rightLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.mas_equalTo(self.rightSwitch);
-        make.top.mas_equalTo(self.rightSwitch.mas_bottom);
-    }];
-    [self.containerView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerY.mas_equalTo(self.view);
-        make.left.mas_equalTo(50);
-        make.right.mas_equalTo(-50);
-        make.height.mas_equalTo(self.view.bounds.size.width-100);
-    }];
-    [self.tipsLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.mas_equalTo(self.view);
-        make.top.mas_equalTo(self.view.mas_safeAreaLayoutGuideTop).offset(40);
-    }];
+    self.leftLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    self.rightLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    self.tipsLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    self.leftSwitch.translatesAutoresizingMaskIntoConstraints = NO;
+    self.rightSwitch.translatesAutoresizingMaskIntoConstraints = NO;
+    self.containerView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [NSLayoutConstraint activateConstraints:@[
+        [self.leftSwitch.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:20],
+        [self.leftSwitch.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:-100],
+
+        [self.rightSwitch.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-20],
+        [self.rightSwitch.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:-100],
+
+        [self.leftLabel.leadingAnchor constraintEqualToAnchor:self.leftSwitch.leadingAnchor],
+        [self.leftLabel.topAnchor constraintEqualToAnchor:self.leftSwitch.bottomAnchor],
+
+        [self.rightLabel.trailingAnchor constraintEqualToAnchor:self.rightSwitch.trailingAnchor],
+        [self.rightLabel.topAnchor constraintEqualToAnchor:self.rightSwitch.bottomAnchor],
+
+        [self.containerView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
+        [self.containerView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:50],
+        [self.containerView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-50],
+        [self.containerView.heightAnchor constraintEqualToConstant:self.view.bounds.size.width - 100],
+
+        [self.tipsLabel.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [self.tipsLabel.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:40]
+    ]];
+    self.dragView.center = self.view.center;
 }
 
 /// 点击时的回调
@@ -111,7 +111,7 @@
 - (UIView *)containerView {
     if (!_containerView) {
         _containerView = [[UIView alloc] init];
-        _containerView.backgroundColor = [UIColor colorWithRed:0.90 green:0.95 blue:1.00 alpha:1.0];
+        _containerView.backgroundColor = [UIColor systemGrayColor];
     }
     return _containerView;
 }
@@ -170,8 +170,7 @@
         [_dragView.button setTitle:@"不可拖曳" forState:UIControlStateSelected];
         _dragView.layer.cornerRadius = 5;
         _dragView.layer.masksToBounds = YES;
-        _dragView.backgroundColor = [UIColor colorWithRed:0.98 green:0.76 blue:0.82 alpha:1.0];
-        _dragView.center = self.view.center;
+        _dragView.backgroundColor = [UIColor orangeColor];
     }
     return _dragView;
 }

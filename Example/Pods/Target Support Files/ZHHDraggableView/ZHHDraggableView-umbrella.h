@@ -10,7 +10,6 @@
 #endif
 #endif
 
-#import "ZHHDraggableView.h"
 
 FOUNDATION_EXPORT double ZHHDraggableViewVersionNumber;
 FOUNDATION_EXPORT const unsigned char ZHHDraggableViewVersionString[];
