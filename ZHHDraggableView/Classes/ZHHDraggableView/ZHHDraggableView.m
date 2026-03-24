@@ -11,12 +11,12 @@
 @interface ZHHDraggableView ()<UIGestureRecognizerDelegate>
 /// 内容视图
 @property (nonatomic, strong) UIView *containerView;
-/// 拖动起始点
-@property (nonatomic, assign) CGPoint startPoint;
 /// 滑动手势识别器
 @property (nonatomic, strong) UIPanGestureRecognizer *panGestureRecognizer;
-/// 上一次的缩放比例
-@property (nonatomic, assign) CGFloat previousScale;
+/// 震动反馈
+@property (nonatomic, strong) UISelectionFeedbackGenerator *feedbackGenerator;
+/// 上一次所在半区（-1:左 1:右）
+@property (nonatomic, assign) NSInteger lastHorizontalZone;
 @end
 
 @implementation ZHHDraggableView
@@ -61,6 +61,7 @@
 - (instancetype)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
     if (self) {
+        [self addSubview:self.containerView];
         [self setUp];
     }
     return self;
@@ -68,12 +69,6 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-
-    // 如果设置了活动范围 freeRect，使用它；否则，使用父视图的 frame 作为默认活动范围
-    if (CGRectEqualToRect(self.freeRect, CGRectZero)) {
-        self.freeRect = (CGRect){CGPointZero, self.superview.bounds.size};
-    }
-
     // 设置各个视图的 frame
     _imageView.frame = self.bounds;
     _button.frame = self.bounds;
@@ -85,6 +80,7 @@
     self.clipsToBounds = YES;
     self.isKeepBounds = NO;
     self.backgroundColor = [UIColor lightGrayColor];
+    self.lastHorizontalZone = 0;
     
     // 单击手势识别器
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(clickDragView)];
@@ -98,16 +94,33 @@
     [self addGestureRecognizer:self.panGestureRecognizer];
 }
 
+- (UISelectionFeedbackGenerator *)feedbackGenerator {
+    if (!_feedbackGenerator) {
+        _feedbackGenerator = [[UISelectionFeedbackGenerator alloc] init];
+    }
+    return _feedbackGenerator;
+}
+
 - (void)setIsKeepBounds:(BOOL)isKeepBounds {
     _isKeepBounds = isKeepBounds;
     if (isKeepBounds) {
-        [self keepBounds];
+        [self keepBoundsWithVelocity:CGPointZero];
     }
 }
 
 - (void)setFreeRect:(CGRect)freeRect {
     _freeRect = freeRect;
-    [self keepBounds];
+    [self keepBoundsWithVelocity:CGPointZero];
+}
+
+// 计算并裁剪活动范围，确保不超出父视图
+- (CGRect)effectiveFreeRect {
+    if (!self.superview) return self.freeRect;
+    CGRect superBounds = self.superview.bounds;
+    if (CGRectEqualToRect(self.freeRect, CGRectZero)) return superBounds;
+    CGRect intersectRect = CGRectIntersection(self.freeRect, superBounds);
+    if (CGRectIsNull(intersectRect) || CGRectIsEmpty(intersectRect)) return superBounds;
+    return intersectRect;
 }
 
 /// 拖动事件处理
@@ -121,11 +134,12 @@
             if ([self.delegate respondsToSelector:@selector(dragViewDidBeginDrag:)]) {
                 [self.delegate dragViewDidBeginDrag:self];
             }
+            [self.feedbackGenerator prepare];
+            [self.feedbackGenerator selectionChanged];
+            [self.feedbackGenerator prepare];
             
             // 重置 translation，避免位置叠加
-            [pan setTranslation:CGPointZero inView:self];
-            // 保存拖动的起始位置
-            self.startPoint = [pan translationInView:self];
+            [pan setTranslation:CGPointZero inView:self.superview];
             break;
         }
             
@@ -135,44 +149,61 @@
                 [self.delegate dragViewIsDuringDrag:self];
             }
             
-            CGPoint point = [pan translationInView:self];
+            CGPoint point = [pan translationInView:self.superview];
             CGFloat dx = 0, dy = 0;
             
             // 根据拖动方向计算位移
             switch (self.dragDirection) {
                 case ZHHDragDirectionAny: // 任意方向
-                    dx = point.x - self.startPoint.x;
-                    dy = point.y - self.startPoint.y;
+                    dx = point.x;
+                    dy = point.y;
                     break;
                 case ZHHDragDirectionHorizontal: // 水平拖动
-                    dx = point.x - self.startPoint.x;
+                    dx = point.x;
                     break;
                 case ZHHDragDirectionVertical: // 垂直拖动
-                    dy = point.y - self.startPoint.y;
+                    dy = point.y;
                     break;
                 default: // 默认：任意方向
-                    dx = point.x - self.startPoint.x;
-                    dy = point.y - self.startPoint.y;
+                    dx = point.x;
+                    dy = point.y;
                     break;
             }
             
             // 更新视图中心位置
             CGPoint newCenter = CGPointMake(self.center.x + dx, self.center.y + dy);
             self.center = newCenter;
+            if (self.isKeepBounds) {
+                CGRect freeRect = [self effectiveFreeRect];
+                CGFloat midX = CGRectGetMidX(freeRect);
+                NSInteger currentZone = (self.center.x < midX) ? -1 : 1;
+                if (self.lastHorizontalZone != 0 && currentZone != self.lastHorizontalZone) {
+                    [self.feedbackGenerator selectionChanged];
+                    [self.feedbackGenerator prepare];
+                }
+                self.lastHorizontalZone = currentZone;
+            }
             
             // 重置 translation，避免位置叠加
-            [pan setTranslation:CGPointZero inView:self];
+            [pan setTranslation:CGPointZero inView:self.superview];
             break;
         }
             
         case UIGestureRecognizerStateEnded: { // 拖动结束
             // 保持视图在有效范围内
-            [self keepBounds];
+            CGPoint velocity = [pan velocityInView:self.superview];
+            [self keepBoundsWithVelocity:velocity];
+            self.lastHorizontalZone = 0;
             
             // 代理回调：通知拖动结束
             if ([self.delegate respondsToSelector:@selector(dragViewDidEndDrag:)]) {
                 [self.delegate dragViewDidEndDrag:self];
             }
+            break;
+        }
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed: {
+            self.lastHorizontalZone = 0;
             break;
         }
             
@@ -190,62 +221,58 @@
 }
 
 // 保持视图在有效范围内
-- (void)keepBounds {
+- (void)keepBoundsWithVelocity:(CGPoint)velocity {
+    CGRect freeRect = [self effectiveFreeRect];
     // 计算中心点
-    float centerX = self.freeRect.origin.x + (self.freeRect.size.width - self.frame.size.width) / 2;
+    float centerX = freeRect.origin.x + (freeRect.size.width - self.frame.size.width) / 2;
+    CGFloat targetX = self.frame.origin.x;
+    CGFloat targetY = self.frame.origin.y;
     
     // 判断是否启用自动黏贴边界效果
     if (self.isKeepBounds == NO) {
         // 没有设置黏贴边界效果，左侧
-        if (self.frame.origin.x < self.freeRect.origin.x) {
-            [self animateToX:self.freeRect.origin.x];
+        if (self.frame.origin.x < freeRect.origin.x) {
+            targetX = freeRect.origin.x;
         }
         // 右侧
-        else if (self.freeRect.origin.x + self.freeRect.size.width < self.frame.origin.x + self.frame.size.width) {
-            [self animateToX:self.freeRect.origin.x + self.freeRect.size.width - self.frame.size.width];
+        else if (freeRect.origin.x + freeRect.size.width < self.frame.origin.x + self.frame.size.width) {
+            targetX = freeRect.origin.x + freeRect.size.width - self.frame.size.width;
         }
     } else if (self.isKeepBounds == YES) {
         // 设置了自动黏贴边界效果，左侧
         if (self.frame.origin.x < centerX) {
-            [self animateToX:self.freeRect.origin.x];
+            targetX = freeRect.origin.x;
         }
         // 右侧
         else {
-            [self animateToX:self.freeRect.origin.x + self.freeRect.size.width - self.frame.size.width];
+            targetX = freeRect.origin.x + freeRect.size.width - self.frame.size.width;
         }
     }
 
     // 上侧
-    if (self.frame.origin.y < self.freeRect.origin.y) {
-        [self animateToY:self.freeRect.origin.y];
+    if (self.frame.origin.y < freeRect.origin.y) {
+        targetY = freeRect.origin.y;
     }
     // 下侧
-    else if (self.freeRect.origin.y + self.freeRect.size.height < self.frame.origin.y + self.frame.size.height) {
-        [self animateToY:self.freeRect.origin.y + self.freeRect.size.height - self.frame.size.height];
+    else if (freeRect.origin.y + freeRect.size.height < self.frame.origin.y + self.frame.size.height) {
+        targetY = freeRect.origin.y + freeRect.size.height - self.frame.size.height;
     }
-}
-
-// 通过动画更新X轴位置
-- (void)animateToX:(CGFloat)x {
-    [UIView animateWithDuration:0.5
+    
+    if (targetX == self.frame.origin.x && targetY == self.frame.origin.y) {
+        return;
+    }
+    
+    CGFloat speed = hypot(velocity.x, velocity.y);
+    NSTimeInterval duration = speed > 1800 ? 0.18 : 0.24;
+    [UIView animateWithDuration:duration
                           delay:0
-                        options:UIViewAnimationOptionCurveEaseInOut
+         usingSpringWithDamping:0.86
+          initialSpringVelocity:0.6
+                        options:UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
                          CGRect rect = self.frame;
-                         rect.origin.x = x;
-                         self.frame = rect;
-                     }
-                     completion:nil];
-}
-
-// 通过动画更新Y轴位置
-- (void)animateToY:(CGFloat)y {
-    [UIView animateWithDuration:0.5
-                          delay:0
-                        options:UIViewAnimationOptionCurveEaseInOut
-                     animations:^{
-                         CGRect rect = self.frame;
-                         rect.origin.y = y;
+                         rect.origin.x = targetX;
+                         rect.origin.y = targetY;
                          self.frame = rect;
                      }
                      completion:nil];

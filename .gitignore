@@ -1,3 +1,7 @@
+Pods/
+!Podfile
+!Podfile.lock
+
 # macOS
 .DS_Store
 

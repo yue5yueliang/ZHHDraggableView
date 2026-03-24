@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'ZHHDraggableView'
-  s.version          = '0.0.1'
+  s.version          = '0.0.2'
   s.summary          = 'ZHHDraggableView 提供可拖动和悬浮的视图，类似 iOS 的 AssistiveTouch 功能。'
 
   # 详细描述 pod 的功能、用途及特点

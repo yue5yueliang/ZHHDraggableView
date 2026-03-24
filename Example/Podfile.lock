@@ -1,16 +1,23 @@
 PODS:
-  - ZHHDraggableView (0.1.0)
+  - Masonry (1.1.0)
+  - ZHHDraggableView (0.0.1)
 
 DEPENDENCIES:
+  - Masonry
   - ZHHDraggableView (from `../`)
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - Masonry
 
 EXTERNAL SOURCES:
   ZHHDraggableView:
     :path: "../"
 
 SPEC CHECKSUMS:
-  ZHHDraggableView: 0c0f0c0fd832c776cbe9ad7a1b5e4a21f5a125f5
+  Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
+  ZHHDraggableView: e90342045aed7f8e9e8b992d479138e6fb64ed56
 
-PODFILE CHECKSUM: dad6cb177a0a51248ea4ae8cb094c3761d586d18
+PODFILE CHECKSUM: d83c23b6192db871f728643af53e63aae3d68015
 
 COCOAPODS: 1.16.2
