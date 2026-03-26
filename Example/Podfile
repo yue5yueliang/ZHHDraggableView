@@ -8,6 +8,8 @@ platform :ios, '13.0'
 target 'ZHHDraggableView_Example' do
   pod 'ZHHDraggableView', :path => '../'
   pod 'SnapKit'        # 自动布局 DSL
+  # 调试工具（仅 Debug 下生效）
+  pod 'LookinServer', :subspecs => ['Swift'], :configurations => ['Debug']  # 自定义的服务器配置（仅在 Debug 模式下使用）
 
   target 'ZHHDraggableView_Tests' do
     inherit! :search_paths

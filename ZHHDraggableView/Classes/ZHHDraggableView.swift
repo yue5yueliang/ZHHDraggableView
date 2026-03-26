@@ -32,7 +32,7 @@ import UIKit
 @objcMembers
 public final class ZHHDraggableView: UIView, UIGestureRecognizerDelegate {
     /// 内容视图
-    private let containerView = UIView()
+    public let contentView = UIView()
     /// 滑动手势识别器
     private lazy var panGestureRecognizer: UIPanGestureRecognizer = {
         let pan = UIPanGestureRecognizer(target: self, action: #selector(dragAction(_:)))
@@ -60,26 +60,6 @@ public final class ZHHDraggableView: UIView, UIGestureRecognizerDelegate {
     /// 拖动方向，默认为 `any`，即任意方向。
     /// 可以限制为特定方向，如上、下、左、右等。
     public var dragDirection: ZHHDragDirection = .any
-    /// contentView 内部懒加载的 `UIImageView`，可用于显示图片。
-    /// 开发者也可以在此视图中自定义控件。
-    /// 注意：尽量避免同时使用内部的 `imageView` 和 `button`。
-    public lazy var imageView: UIImageView = {
-        let view = UIImageView()
-        view.isUserInteractionEnabled = true
-        view.clipsToBounds = true
-        containerView.addSubview(view)
-        return view
-    }()
-    /// contentView 内部懒加载的 `UIButton`，可用于响应用户操作。
-    /// 开发者也可以在此视图中自定义控件。
-    /// 注意：尽量避免同时使用内部的 `imageView` 和 `button`。
-    public lazy var button: UIButton = {
-        let button = UIButton(type: .custom)
-        button.clipsToBounds = true
-        button.isUserInteractionEnabled = false
-        containerView.addSubview(button)
-        return button
-    }()
     /// 是否保持在父视图边界内。默认为 NO。
     /// 当 isKeepBounds = YES 时，视图会自动粘附到最近的边界。
     /// 当 isKeepBounds = NO 时，视图处于自由状态，可以随手指移动，但不会超出父视图的范围。
@@ -90,6 +70,9 @@ public final class ZHHDraggableView: UIView, UIGestureRecognizerDelegate {
             }
         }
     }
+    /// 粘附边界时，离边缘的安全距离（上/左/下/右）。
+    /// 仅在 `isKeepBounds = YES` 时生效。
+    public var keepBoundsInsets: UIEdgeInsets = .zero
     /// 代理
     public weak var delegate: ZHHDraggableViewDelegate?
 
@@ -106,23 +89,25 @@ public final class ZHHDraggableView: UIView, UIGestureRecognizerDelegate {
     public override func layoutSubviews() {
         super.layoutSubviews()
         // 设置各个视图的 frame
-        imageView.frame = bounds
-        button.frame = bounds
-        containerView.frame = bounds
+        contentView.frame = bounds
     }
+}
 
+private extension ZHHDraggableView {
     private func setup() {
         clipsToBounds = true
         backgroundColor = .lightGray
 
-        containerView.clipsToBounds = true
-        addSubview(containerView)
+        contentView.clipsToBounds = true
+        addSubview(contentView)
 
         // 单击手势识别器
         let singleTap = UITapGestureRecognizer(target: self, action: #selector(clickDragView))
+        singleTap.cancelsTouchesInView = false
         addGestureRecognizer(singleTap)
 
         // 拖动手势识别器
+        panGestureRecognizer.cancelsTouchesInView = false
         addGestureRecognizer(panGestureRecognizer)
     }
 
@@ -135,7 +120,9 @@ public final class ZHHDraggableView: UIView, UIGestureRecognizerDelegate {
         if intersectRect.isNull || intersectRect.isEmpty { return superBounds }
         return intersectRect
     }
+}
 
+private extension ZHHDraggableView {
     /// 拖动事件处理
     /// - Parameter pan: 拖动手势识别器
     @objc private func dragAction(_ pan: UIPanGestureRecognizer) {
@@ -204,7 +191,9 @@ public final class ZHHDraggableView: UIView, UIGestureRecognizerDelegate {
             break
         }
     }
+}
 
+private extension ZHHDraggableView {
     // 单击事件处理
     @objc private func clickDragView() {
         // 代理回调：通知单击事件
@@ -214,8 +203,10 @@ public final class ZHHDraggableView: UIView, UIGestureRecognizerDelegate {
     // 保持视图在有效范围内
     private func keepBounds(withVelocity velocity: CGPoint) {
         let freeRect = effectiveFreeRect()
+        let insetRect = freeRect.inset(by: keepBoundsInsets)
+        let rectForKeepBounds = (insetRect.isNull || insetRect.isEmpty) ? freeRect : insetRect
         // 计算中心点
-        let centerX = freeRect.origin.x + (freeRect.size.width - frame.size.width) / 2
+        let centerX = rectForKeepBounds.origin.x + (rectForKeepBounds.size.width - frame.size.width) / 2
         var targetX = frame.origin.x
         var targetY = frame.origin.y
 
@@ -232,21 +223,22 @@ public final class ZHHDraggableView: UIView, UIGestureRecognizerDelegate {
         } else {
             // 设置了自动黏贴边界效果，左侧
             if frame.origin.x < centerX {
-                targetX = freeRect.origin.x
+                targetX = rectForKeepBounds.origin.x
             }
             // 右侧
             else {
-                targetX = freeRect.origin.x + freeRect.size.width - frame.size.width
+                targetX = rectForKeepBounds.origin.x + rectForKeepBounds.size.width - frame.size.width
             }
         }
 
+        let rectForY = isKeepBounds ? rectForKeepBounds : freeRect
         // 上侧
-        if frame.origin.y < freeRect.origin.y {
-            targetY = freeRect.origin.y
+        if frame.origin.y < rectForY.origin.y {
+            targetY = rectForY.origin.y
         }
         // 下侧
-        else if freeRect.origin.y + freeRect.size.height < frame.origin.y + frame.size.height {
-            targetY = freeRect.origin.y + freeRect.size.height - frame.size.height
+        else if rectForY.origin.y + rectForY.size.height < frame.origin.y + frame.size.height {
+            targetY = rectForY.origin.y + rectForY.size.height - frame.size.height
         }
 
         if targetX == frame.origin.x, targetY == frame.origin.y {

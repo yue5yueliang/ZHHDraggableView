@@ -1,13 +1,18 @@
 PODS:
+  - LookinServer/Core (1.2.8)
+  - LookinServer/Swift (1.2.8):
+    - LookinServer/Core
   - SnapKit (5.7.1)
   - ZHHDraggableView (0.0.3)
 
 DEPENDENCIES:
+  - LookinServer/Swift
   - SnapKit
   - ZHHDraggableView (from `../`)
 
 SPEC REPOS:
   trunk:
+    - LookinServer
     - SnapKit
 
 EXTERNAL SOURCES:
@@ -15,9 +20,10 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
+  LookinServer: 1b2b61c6402ae29fa22182d48f5cd067b4e99e80
   SnapKit: d612e99e678a2d3b95bf60b0705ed0a35c03484a
-  ZHHDraggableView: 4cd9898823878366373ada4e8e42b55a9ec879b1
+  ZHHDraggableView: c4dd9870f46ca16b0d0e0af6291e68673d5ede56
 
-PODFILE CHECKSUM: 40f693338b32c9728ae9d27acff1544ccf7321ed
+PODFILE CHECKSUM: 52ccddb8075f1d2959b246e9668b7266084cf624
 
 COCOAPODS: 1.16.2

@@ -14,13 +14,23 @@ class SwiftExampleViewController: UIViewController {
     private lazy var dragView: ZHHDraggableView = {
         let view = ZHHDraggableView(frame: CGRect(x: 0, y: 0, width: 80, height: 80))
         view.delegate = self
-        view.button.titleLabel?.font = .systemFont(ofSize: 15)
-        view.button.setTitle("可拖曳", for: .normal)
-        view.button.setTitle("不可拖曳", for: .selected)
         view.layer.cornerRadius = 5
         view.layer.masksToBounds = true
         view.backgroundColor = .orange
+        dragButton.frame = view.bounds
+        view.contentView.addSubview(dragButton)
         return view
+    }()
+
+    private lazy var dragButton: UIButton = {
+        let button = UIButton(type: .custom)
+        button.titleLabel?.font = .systemFont(ofSize: 15)
+        button.setTitle("可拖曳", for: .normal)
+        button.setTitle("不可拖曳", for: .selected)
+        // 让点击事件由 `ZHHDraggableView` 的手势处理，避免按钮吞掉点击导致回调不触发
+        button.isUserInteractionEnabled = false
+        button.clipsToBounds = true
+        return button
     }()
 
     private lazy var leftLabel: UILabel = {
@@ -51,6 +61,23 @@ class SwiftExampleViewController: UIViewController {
         return toggle
     }()
 
+    private lazy var keepBoundsInsetsValueLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 15)
+        label.text = "贴边距：10"
+        return label
+    }()
+
+    private lazy var keepBoundsInsetsSlider: UISlider = {
+        let slider = UISlider()
+        slider.minimumValue = 0
+        slider.maximumValue = 30
+        slider.value = 10
+        slider.addTarget(self, action: #selector(keepBoundsInsetsChanged(_:)), for: .valueChanged)
+        return slider
+    }()
+
     private lazy var tipsLabel: UILabel = {
         let label = UILabel()
         label.textColor = .black
@@ -74,29 +101,40 @@ class SwiftExampleViewController: UIViewController {
         view.addSubview(tipsLabel)
         view.addSubview(leftSwitch)
         view.addSubview(rightSwitch)
+        view.addSubview(keepBoundsInsetsValueLabel)
+        view.addSubview(keepBoundsInsetsSlider)
         view.addSubview(containerView)
         view.addSubview(dragView)
 
         leftSwitch.snp.makeConstraints { make in
-            make.left.equalToSuperview().offset(20)
-            make.bottom.equalToSuperview().offset(-100)
-        }
-        rightSwitch.snp.makeConstraints { make in
-            make.right.equalToSuperview().offset(-20)
-            make.bottom.equalToSuperview().offset(-100)
+            make.leading.equalTo(leftLabel.snp.trailing).offset(20)
+            make.bottom.equalToSuperview().offset(-140)
         }
         leftLabel.snp.makeConstraints { make in
-            make.left.equalTo(leftSwitch)
-            make.top.equalTo(leftSwitch.snp.bottom)
+            make.leading.equalToSuperview().offset(20)
+            make.centerY.equalTo(leftSwitch.snp.centerY)
         }
         rightLabel.snp.makeConstraints { make in
-            make.right.equalTo(rightSwitch)
-            make.top.equalTo(rightSwitch.snp.bottom)
+            make.centerY.equalTo(rightSwitch.snp.centerY)
+            make.leading.equalToSuperview().offset(20)
+        }
+        rightSwitch.snp.makeConstraints { make in
+            make.leading.equalTo(rightLabel.snp.trailing).offset(20)
+            make.bottom.equalToSuperview().offset(-100)
+        }
+        keepBoundsInsetsValueLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(20)
+            make.bottom.equalTo(leftSwitch.snp.top).offset(-16)
+        }
+        keepBoundsInsetsSlider.snp.makeConstraints { make in
+            make.leading.equalTo(keepBoundsInsetsValueLabel.snp.trailing).offset(20)
+            make.width.equalTo(160)
+            make.centerY.equalTo(keepBoundsInsetsValueLabel.snp.centerY)
         }
         containerView.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
-            make.left.equalToSuperview().offset(50)
-            make.right.equalToSuperview().offset(-50)
+            make.leading.equalToSuperview().offset(50)
+            make.trailing.equalToSuperview().offset(-50)
             make.height.equalTo(view.bounds.size.width - 100)
         }
         tipsLabel.snp.makeConstraints { make in
@@ -117,8 +155,17 @@ class SwiftExampleViewController: UIViewController {
     }
 
     @objc private func boundsOrNot(_ sender: UISwitch) {
+        let v = CGFloat(Int(round(keepBoundsInsetsSlider.value)))
+        keepBoundsInsetsValueLabel.text = "贴边距：\(Int(v))"
+        dragView.keepBoundsInsets = UIEdgeInsets(top: v, left: v, bottom: v, right: v)
         dragView.isKeepBounds = sender.isOn
         view.layoutIfNeeded()
+    }
+
+    @objc private func keepBoundsInsetsChanged(_ sender: UISlider) {
+        let v = CGFloat(Int(round(sender.value)))
+        keepBoundsInsetsValueLabel.text = "贴边距：\(Int(v))"
+        dragView.keepBoundsInsets = UIEdgeInsets(top: v, left: v, bottom: v, right: v)
     }
 
     @objc private func hideTips() {
@@ -130,11 +177,12 @@ class SwiftExampleViewController: UIViewController {
 extension SwiftExampleViewController: ZHHDraggableViewDelegate {
     /// 点击时的回调
     func dragViewDidClick(_ dragView: ZHHDraggableView) {
-        dragView.button.isSelected = dragView.dragEnable
+        dragButton.isSelected = dragView.dragEnable
         dragView.dragEnable = !dragView.dragEnable
 
         tipsLabel.isHidden = false
-        tipsLabel.text = dragView.button.titleLabel?.text
+        let state: UIControl.State = dragButton.isSelected ? .selected : .normal
+        tipsLabel.text = dragButton.title(for: state)
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(hideTips), object: nil)
         perform(#selector(hideTips), with: nil, afterDelay: 2)
     }

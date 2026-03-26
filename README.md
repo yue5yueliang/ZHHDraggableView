@@ -38,7 +38,11 @@ pod 'ZHHDraggableView'
 import ZHHDraggableView
 
 let dragView = ZHHDraggableView(frame: CGRect(x: 100, y: 200, width: 80, height: 80))
-dragView.button.setTitle("可拖曳", for: .normal)
+let button = UIButton(type: .custom)
+button.frame = dragView.bounds
+button.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+button.setTitle("可拖曳", for: .normal)
+dragView.contentView.addSubview(button)
 dragView.isKeepBounds = true
 view.addSubview(dragView)
 ```
@@ -49,7 +53,11 @@ view.addSubview(dragView)
 @import ZHHDraggableView;
 
 ZHHDraggableView *dragView = [[ZHHDraggableView alloc] initWithFrame:CGRectMake(100, 200, 80, 80)];
-[dragView.button setTitle:@"可拖曳" forState:UIControlStateNormal];
+UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+button.frame = dragView.bounds;
+button.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+[button setTitle:@"可拖曳" forState:UIControlStateNormal];
+[dragView.contentView addSubview:button];
 dragView.isKeepBounds = YES;
 [self.view addSubview:dragView];
 ```
